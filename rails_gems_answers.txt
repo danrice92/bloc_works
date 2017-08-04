@@ -1,0 +1,25 @@
+Rails is comprised of five gems. Write a paragraph on what each does:
+
+ActiveModel
+ActiveRecord
+ActiveSupport
+ActionPack
+ActionMailer
+Add tests to Blocworks
+
+Use rack-test and test-unit
+Write tests for call
+
+1. ActiveModel is a gem that allows developers to have access to several different methods for their model classes as soon as they start up a Rails project. It also allows compatibility with custom ORM's if developers don't want to use the built-in ActiveRecord ORM so they don't have to recycle existing code in Rails to get the ORM to work.
+
+2. ActiveRecord is an ORM (object-relational map) and is therefore responsible for allowing model classes to interact with databases and other model classes. This means that users can incorporate many different types of databases and custom models in their Rails projects and easily associate them together without having to build the association complexity themselves.
+
+3. ActiveSupport is a gem consisting of a group of classes and extensions that the developers of Rails felt would be useful to developers. Generally these classes are utilities, like functions that can track the date and time for an application or convert currency rates.
+
+4. ActionPack is a gem that handles web HTTP requests and interacts between the view and the controller through routing. It's the VC in MVC.
+
+5. ActionMailer is a gem for managing email services. It manages interactions like resetting passwords and storing an email for a user account.
+
+def test_whatever (for rack testing) like test_call
+
+return BlocWorks application with method (like def app)
