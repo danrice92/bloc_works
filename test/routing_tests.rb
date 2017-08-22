@@ -3,16 +3,17 @@ require "test/unit"
 require "rack/test"
 
 # write tests for call
-class CallTest < Test::Unit::TestCase
+class RoutingTest < Test::Unit::TestCase
   include Rack::Test::Methods
 
   def app
     BlocWorks::Application.new
   end
 
-  def test_call_method
+  def test_it_errors_out_when_there_is_no_file
     get '/'
-    assert last_response.ok?
+    assert last_response != true
+    assert_equal "404 (that's an error). That path does not exist.", last_response.body
     assert last_response.header.has_value?("text/html")
   end
 end

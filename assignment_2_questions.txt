@@ -1,0 +1,7 @@
+1. How does our simple routing differ from Rails routing?
+
+2. What are we missing?
+
+Really these two questions bleed into each other. Our simple routing only allows for GET actions to be done on a BlocWorks application–the user can retrieve web pages and get some error messages, but that's about it right now.
+
+Rails routing allows for several different types of actions, such as creating, updating, and deleting information in the app's database. Of course, Rails also has lots of methods and functionality that's optimized for all of these actions, such as the :resources terminology used in its routes.
