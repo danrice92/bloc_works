@@ -1,16 +1,16 @@
 module BlocWorks
   class Application
 
-    def controller_and_action(env)
-      _, controller, action, _ = env["PATH_INFO"].split("/", 4)
-      controller = controller.capitalize
-      controller = "#{controller}Controller"
-      if controller != "Controller"
-        [Object.const_get(controller), action]
-      else
-        return nil
-      end
-    end
+    # def controller_and_action(env)
+    #   _, controller, action, _ = env["PATH_INFO"].split("/", 4)
+    #   controller = controller.capitalize
+    #   controller = "#{controller}Controller"
+    #   if controller != ":controller"
+    #     [Object.const_get(controller), action]
+    #   else
+    #     return nil
+    #   end
+    # end
 
     def route(&block)
       @router ||= Router.new
@@ -22,7 +22,7 @@ module BlocWorks
         raise "No routes defined"
       end
 
-      @router.look_up_url(env["PATH_INFO"])
+      @router.look_up_url(env["PATH_INFO"], env["REQUEST_METHOD"])
     end
   end
 
@@ -30,6 +30,23 @@ module BlocWorks
 
     def initialize
       @rules = []
+    end
+
+    def resources(controller)
+      controller = controller.to_s
+
+      # manages POST create and GET index
+      map "#{controller}", default: { "controller" => controller }
+
+      # these manage index and new and are consistently GET requests
+      map "#{controller}/index", default: { "controller" => controller, "action" => "index" }
+      map "#{controller}/new", default: { "controller" => controller, "action" => "new" }
+
+      # GET show, PUT update, and DELETE destroy all require the :id
+      map "#{controller}/:id", default: { "controller" => controller }
+
+      # if the user wants to explicitly call show, edit, update, or destroy on an ID
+      map "#{controller}/:id/:action", default: { "controller" => controller, "action" => :action}
     end
 
     def map(url, *args)
@@ -47,6 +64,7 @@ module BlocWorks
       vars, regex_parts = [], []
 
       parts.each do |part|
+        # puts part
         case part[0]
         when ":"
           vars << part[1..-1]
@@ -60,12 +78,13 @@ module BlocWorks
       end
 
       regex = regex_parts.join("/")
+
       @rules.push({ regex: Regexp.new("^/#{regex}$"),
                     vars: vars, destination: destination,
                     options: options })
     end
 
-    def look_up_url(url)
+    def look_up_url(url, request_verb)
       @rules.each do |rule|
         rule_match = rule[:regex].match(url)
 
@@ -75,6 +94,32 @@ module BlocWorks
 
           rule[:vars].each_with_index do |var, index|
             params[var] = rule_match.captures[index]
+          end
+
+
+          if rule[:destination] && params == {}
+            params["controller"] = rule[:destination][/^[^#]+/]
+            params["action"] = rule[:destination][/[^#]+$/]
+          end
+
+          if params["action"] == nil && params["id"] == nil
+            if request_verb == "GET"
+              params["action"] = "index"
+            elsif request_verb == "POST"
+              params["action"] = "create"
+            else
+              raise "No action could be determined."
+            end
+          elsif params["action"] == nil && params["id"] != nil
+            if request_verb == "GET"
+              params["action"] = "show"
+            elsif request_verb == "PUT"
+              params["action"] = "update"
+            elsif request_verb == "DELETE"
+              params["action"] = "destroy"
+            else
+              raise "No action could be determined."
+            end
           end
 
           if rule[:destination]
@@ -96,6 +141,7 @@ module BlocWorks
       if destination =~ /^([^#]+)#([^#]+)$/
         name = $1.capitalize
         controller = Object.const_get("#{name}Controller")
+
         return controller.action($2, routing_params)
       end
       raise "Destination not found: #{destination}"

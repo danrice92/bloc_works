@@ -2,7 +2,6 @@ require "bloc_works"
 require "test/unit"
 require "rack/test"
 
-# write tests for call
 class RoutingTest < Test::Unit::TestCase
   include Rack::Test::Methods
 
